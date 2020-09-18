@@ -10,6 +10,7 @@ def scrape_all():
     browser = Browser('chrome', r'C:\Users\eblak\Class_Folder\Mission-to-Mars', headless=False)
     
     news_title, news_paragraph = mars_news(browser)
+    print(news_title)
 
     # run all scraping functions and store results in dictionary
     data = {
@@ -17,16 +18,19 @@ def scrape_all():
         'news_paragraph': news_paragraph,
         'featured_image': featured_image(browser),
         'facts': mars_facts(),
-        'last_modified': dt.datetime.now()
+        'last_modified': dt.datetime.now(),
+        'hemisphere': mars_hemi()
     }
-
+    
     # close session
     browser.quit()
     return data
 
 def mars_news(browser):
+    print('starting mars_news', flush=True)
     # scrape Mars News
     # Visit the webite to scrape  -------> used a shortened URL
+    print('executing mars_news')
     url = 'https://rb.gy/fqggqy'
     browser.visit(url)
 
@@ -59,7 +63,7 @@ def featured_image(browser):
     browser.visit(url)
 
     # find and click the Full Image button
-    full_image_elem = browser.find_by_id('full_image')
+    full_image_elem = browser.find_by_id('full_image')[0]
     full_image_elem.click()
 
     # Find the more info button and click that
@@ -90,7 +94,9 @@ def mars_facts():
         df = pd.read_html('http://space-facts.com/mars/')[0]
     
     except BaseException:
+        print("Exception ", BaseException)
         return None
+
 
     # assign column names and set index of df
     df.columns=['description', 'value']
@@ -99,10 +105,93 @@ def mars_facts():
     # convert df to html-ready, add bootstrap
     return df.to_html(classes='table table-striped')
 
+def mars_hemi():
+    # scraping the hemisphere urls and title
+    # Windows users
+    executable_path = {'executable_path': 'chromedriver.exe'}
+    browser = Browser('chrome', r'C:\Users\eblak\Class_Folder\Mission-to-Mars', headless=False)
+    
+    # 1. Use browser to visit the hemisphere URL 
+    url = 'https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars'
+    browser.visit(url)
 
+    # 3. Write code to retrieve the image urls and titles for each hemisphere.
+    # b. Cerberus
+    browser.click_link_by_partial_text('Cerberus')
+    cerberus_html = browser.html
+    cerberus_soup = soup(cerberus_html, 'html.parser')
+
+    # find title
+    cerberus_title = cerberus_soup.find("h2", class_ = 'title').text
+
+    # Find the relative image url
+    cerberus = cerberus_soup.find('img', class_ = 'wide-image')
+    cerberus_img = cerberus['src']
+
+    # add base url to rel url
+    hemi_url = 'https://astrogeology.usgs.gov'
+    cerberus_url = hemi_url + cerberus_img
+
+    # 3. Write code to retrieve the image urls and titles for each hemisphere.
+    # c. Schiaparelli
+    browser.back()
+    browser.click_link_by_partial_text('Schiaparelli')
+    schiaparelli_html = browser.html
+    schiaparelli_soup = soup(schiaparelli_html, 'html.parser')
+
+    # find title
+    schiaparelli_title = schiaparelli_soup.find("h2", class_ = 'title').text
+
+    # find the relative image url
+    schiaparelli = schiaparelli_soup.find('img', class_ = 'wide-image')
+    schiaparelli_img = schiaparelli['src']
+
+    # add base url to rel url
+    hemi_url = 'https://astrogeology.usgs.gov'
+    schiaparelli_url = hemi_url + schiaparelli_img
+
+    # 3. Write code to retrieve the image urls and titles for each hemisphere.
+    # d. Syrtis Major
+    browser.back()
+    browser.click_link_by_partial_text('Syrtis')
+    syrtis_html = browser.html
+    syrtis_soup = soup(syrtis_html, 'html.parser')
+
+    # find title
+    syrtis_title = syrtis_soup.find("h2", class_ = 'title').text
+
+    # find the relative image url
+    syrtis = syrtis_soup.find('img', class_ = 'wide-image')
+    syrtis_img = syrtis['src']
+
+    # add base url to rel url
+    hemi_url = 'https://astrogeology.usgs.gov'
+    syrtis_url = hemi_url + syrtis_img
+
+    # 3. Write code to retrieve the image urls and titles for each hemisphere.
+    # e. Valles Marineris
+    browser.back()
+    browser.click_link_by_partial_text('Valles')
+    valles_html = browser.html
+    valles_soup = soup(valles_html, 'html.parser')
+
+    # find title
+    valles_title = valles_soup.find("h2", class_ = 'title').text
+
+    # find the relative image url
+    valles = valles_soup.find('img', class_ = 'wide-image')
+    valles_img = valles['src']
+
+    # add base url to rel url
+    hemi_url = 'https://astrogeology.usgs.gov'
+    valles_url = hemi_url + valles_img
+
+    return [{'img_url': cerberus_url, 'title': cerberus_title},
+            {'img_url': schiaparelli_url, 'title': schiaparelli_title},
+            {'img_url': syrtis_url, 'title': syrtis_title}, 
+            {'img_url': valles_url, 'title': valles_title}]
+    
 # scraping complete
 if __name__ == '__main__':
-    # if running as script, print scraped data
+    print('something to print', flush=True)
     print(scrape_all())
-
-

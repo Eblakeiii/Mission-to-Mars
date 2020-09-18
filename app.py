@@ -15,7 +15,7 @@ def index():
    return render_template("index.html", mars=mars)
 
 # set up scraping route
-@app.route("/scrape")
+@app.route("/scraping")
 def scrape():
    mars = mongo.db.mars
    mars_data = scraping.scrape_all()
@@ -24,4 +24,4 @@ def scrape():
 
 # run the scraping 
 if __name__ == "__main__":
-   app.run()
+   app.run(debug=True)
